@@ -4,7 +4,7 @@ import os
 # Import MySQL connector
 import mysql.connector
 load_dotenv()
-
+DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:@localhost/eclat_app")
 HOST = os.getenv("DB_HOST", "localhost")
 USER = os.getenv("DB_USER", "root")
 PASSWORD = os.getenv("DB_PASSWORD", "")
@@ -13,9 +13,11 @@ DATABASE = os.getenv("DB_NAME", "pharmacy_db")
 def get_db_connection():
     return mysql.connector.connect(
         host=HOST,
+        port=os.getenv("DB_PORT", 3306),
         user=USER,
         password=PASSWORD,
         database=DATABASE
+
     )
 
 # Fungsi untuk mengambil data obat dari database
