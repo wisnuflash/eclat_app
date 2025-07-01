@@ -1,1 +1,5 @@
 utils/__pycache__
+.streamlit/secrets.toml
+# Ignore Python cache files
+__pycache__/
+.env

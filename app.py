@@ -14,6 +14,8 @@ from utils.data_processing import DataProcessor
 from utils.visualization import VisualizationManager
 from utils.report_generator import ReportGenerator
 from utils.activity_logger import ActivityLogger
+from utils.database import fetch_stock_data, add_stock_obat, update_stock_obat, delete_stock_obat
+from halaman.data_obat import show_manajemen_obat
 
 # Initialize session state
 if 'data' not in st.session_state:
@@ -32,40 +34,46 @@ eclat_algorithm = ECLATAlgorithm()
 viz_manager = VisualizationManager()
 report_generator = ReportGenerator()
 
+
 def main():
     st.set_page_config(
         page_title="ECLAT Drug Pattern Analysis",
         page_icon="💊",
         layout="wide",
-        initial_sidebar_state="expanded"
+        # initial_sidebar_state="expanded"
     )
     
-    st.title("💊 ECLAT Drug Pattern Analysis System")
+    st.title("💊 ECLAT Drug")
     st.markdown("---")
     
     # Sidebar navigation
     st.sidebar.title("Navigation")
-    page = st.sidebar.selectbox(
-        "Select Function:",
-        ["Input Data Resep Obat", "Proses Analisis ECLAT", "Lihat Hasil Analisis", 
+    page = st.sidebar.radio(
+        "List Halaman Eclat Analysis:",
+        ["Manajemen Data Obat", "Input Data Resep Obat", "Proses Analisis ECLAT", "Lihat Hasil Analisis", 
          "Lihat Rekomendasi Obat", "Unduh Laporan", "Log Aktivitas"]
     )
     
     # Log page navigation
     activity_logger.log_activity(f"Navigated to: {page}")
     
-    if page == "Input Data Resep Obat":
-        input_data_page()
-    elif page == "Proses Analisis ECLAT":
-        process_analysis_page()
-    elif page == "Lihat Hasil Analisis":
-        view_results_page()
-    elif page == "Lihat Rekomendasi Obat":
-        recommendations_page()
-    elif page == "Unduh Laporan":
-        download_reports_page()
-    elif page == "Log Aktivitas":
-        activity_logs_page()
+    pages = {
+        "Manajemen Data Obat": show_manajemen_obat,
+        "Input Data Resep Obat": input_data_page,
+        "Proses Analisis ECLAT": process_analysis_page,
+        "Lihat Hasil Analisis": view_results_page,
+        "Lihat Rekomendasi Obat": recommendations_page,
+        "Unduh Laporan": download_reports_page,
+        "Log Aktivitas": activity_logs_page,
+    }
+
+    # Eksekusi fungsi berdasarkan pilihan user
+    if page in pages:
+        pages[page]()
+    else:
+        st.error("Halaman tidak ditemukan.")
+
+
 
 def input_data_page():
     st.header("📊 Input Data Resep Obat")

@@ -11,4 +11,6 @@ dependencies = [
     "plotly>=6.1.2",
     "streamlit>=1.46.0",
     "xlsxwriter>=3.2.5",
+    "authlib>=1.6.0",
+    
 ]
