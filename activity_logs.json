@@ -118,5 +118,53 @@
     "user": "system",
     "activity": "Navigated to: Manajemen Data Obat",
     "details": {}
+  },
+  {
+    "timestamp": "2025-07-01T22:56:22.238010",
+    "user": "system",
+    "activity": "Navigated to: Manajemen Data Obat",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-01T22:56:34.630672",
+    "user": "system",
+    "activity": "Navigated to: Input Data Resep Obat",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-01T22:56:35.718745",
+    "user": "system",
+    "activity": "Navigated to: Proses Analisis ECLAT",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-01T22:56:36.801788",
+    "user": "system",
+    "activity": "Navigated to: Lihat Hasil Analisis",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-01T22:56:37.592194",
+    "user": "system",
+    "activity": "Navigated to: Lihat Rekomendasi Obat",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-01T22:56:38.301212",
+    "user": "system",
+    "activity": "Navigated to: Unduh Laporan",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-01T22:56:38.830413",
+    "user": "system",
+    "activity": "Navigated to: Log Aktivitas",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-01T22:56:39.666570",
+    "user": "system",
+    "activity": "Navigated to: Manajemen Data Obat",
+    "details": {}
   }
 ]
