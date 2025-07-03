@@ -5,3 +5,4 @@ __pycache__/
 .env
 repl_nix_workspace.egg-info
 build
+activity_logs.json
