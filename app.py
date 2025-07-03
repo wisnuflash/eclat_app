@@ -7,6 +7,7 @@ from plotly.subplots import make_subplots
 import io
 from datetime import datetime
 import os
+from pathlib import Path
 
 # Import custom utilities
 from utils.eclat_algorithm import ECLATAlgorithm
@@ -16,6 +17,7 @@ from utils.report_generator import ReportGenerator
 from utils.activity_logger import ActivityLogger
 from utils.database import fetch_stock_data, add_stock_obat, update_stock_obat, delete_stock_obat
 from halaman.data_obat import show_manajemen_obat
+from utils.database_setup import SQLAlchemySetup
 
 # Initialize session state
 if 'data' not in st.session_state:
@@ -33,8 +35,16 @@ data_processor = DataProcessor()
 eclat_algorithm = ECLATAlgorithm()
 viz_manager = VisualizationManager()
 report_generator = ReportGenerator()
+# Initialize database setup
+db_setup = SQLAlchemySetup()
+# Initialize database connection
+if not db_setup.init_database():
+    st.error("❌ Gagal menginisialisasi database. Periksa konfigurasi dan coba lagi.")
+# Check if database setup is successful
+if not db_setup.execute_sql_file():
+    st.error("❌ Gagal menjalankan file SQL untuk setup database. Periksa file dan coba lagi.")
 
-
+# Main function to run the Streamlit app
 def main():
     st.set_page_config(
         page_title="ECLAT Drug Pattern Analysis",
