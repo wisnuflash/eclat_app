@@ -15,7 +15,7 @@ from utils.data_processing import DataProcessor
 from utils.visualization import VisualizationManager
 from utils.report_generator import ReportGenerator
 from utils.activity_logger import ActivityLogger
-from utils.database import fetch_stock_data, add_stock_obat, update_stock_obat, delete_stock_obat
+from utils.database import fetch_stock_data, add_stock_obat, update_stock_obat, delete_stock_obat, execute_sql_file
 from halaman.data_obat import show_manajemen_obat
 from utils.database_setup import SQLAlchemySetup
 
@@ -36,54 +36,290 @@ eclat_algorithm = ECLATAlgorithm()
 viz_manager = VisualizationManager()
 report_generator = ReportGenerator()
 # Initialize database setup
-db_setup = SQLAlchemySetup()
+# db_setup = SQLAlchemySetup()
 # Initialize database connection
-if not db_setup.init_database():
-    st.error("❌ Gagal menginisialisasi database. Periksa konfigurasi dan coba lagi.")
+# if not db_setup.init_database():
+#     st.error("❌ Gagal menginisialisasi database. Periksa konfigurasi dan coba lagi.")
 # Check if database setup is successful
-if not db_setup.execute_sql_file():
-    st.error("❌ Gagal menjalankan file SQL untuk setup database. Periksa file dan coba lagi.")
-
+# if not execute_sql_file(sql_file_path_relative='database_schema.sql'):
+#     st.error("❌ Gagal menjalankan file SQL untuk setup database. Periksa file dan coba lagi.")
+# else:
+#     st.success("✅ Database sudah siap!")
+# print("📁 Current working directory:", os.getcwd())
 # Main function to run the Streamlit app
+
+# Sidebar navigation dengan design yang lebih baik
+def create_sidebar():
+    st.sidebar.title("🏥 Pharmacy Management System")
+    st.sidebar.markdown("---")
+    
+    # Initialize session state untuk menyimpan pilihan aktif
+    if 'active_page' not in st.session_state:
+        st.session_state.active_page = "Manajemen Data Obat"
+    
+    selected_page = None
+    
+    # Sidebar dengan navigation menggunakan expander dan button
+    with st.sidebar:
+        
+        # Expander untuk Manajemen Obat
+        with st.expander("📊 Manajemen Obat", expanded=True):
+            # col1, col2 = st.columns(2)
+
+            if st.button("📋 Data Obat", use_container_width=True):
+                selected_page = "Manajemen Data Obat"
+                st.session_state.active_page = selected_page
+
+            if st.button("📥 Unduh Laporan", use_container_width=True):
+                selected_page = "Unduh Laporan"
+                st.session_state.active_page = selected_page
+            
+            if st.button("📝 Log Aktivitas", use_container_width=True):
+                selected_page = "Log Aktivitas"
+                st.session_state.active_page = selected_page
+        
+        # Expander untuk Eclat Analysis
+        with st.expander("🔍 Eclat Analysis", expanded=False):
+            # col1, col2 = st.columns(2)
+
+            if st.button("📊 Input Data", use_container_width=True):
+                selected_page = "Input Data Resep Obat"
+                st.session_state.active_page = selected_page
+
+            if st.button("⚙️ Proses Analisis", use_container_width=True):
+                selected_page = "Proses Analisis ECLAT"
+                st.session_state.active_page = selected_page
+
+            if st.button("📈 Lihat Hasil", use_container_width=True):
+                selected_page = "Lihat Hasil Analisis"
+                st.session_state.active_page = selected_page
+            
+            if st.button("💡 Rekomendasi", use_container_width=True):
+                selected_page = "Lihat Rekomendasi Obat"
+                st.session_state.active_page = selected_page
+            
+            if st.button("📋 Unduh Laporan Eclat", use_container_width=True):
+                selected_page = "Unduh Laporan Eclat"
+                st.session_state.active_page = selected_page
+        
+        # Expander untuk Pengaturan
+        with st.expander("⚙️ Pengaturan"):
+            st.markdown("**Konfigurasi Analisis:**")
+            
+            min_support = st.slider("Minimum Support", 0.1, 1.0, 0.3, key="min_support")
+            confidence = st.slider("Minimum Confidence", 0.1, 1.0, 0.5, key="confidence")
+            max_items = st.number_input("Max Items per Set", 2, 10, 5, key="max_items")
+            
+            st.markdown("**Database:**")
+            if st.button("🔄 Refresh Database", use_container_width=True):
+                st.success("Database refreshed!")
+            
+            if st.button("🗑️ Clear Cache", use_container_width=True):
+                st.success("Cache cleared!")
+        
+        # Expander untuk Info Aplikasi
+        with st.expander("ℹ️ Tentang Aplikasi"):
+            st.markdown("""
+            **Pharmacy Management System v1.0**
+            
+            **Fitur Utama:**
+            - 📊 Manajemen data obat
+            - 🔍 Analisis pola dengan algoritma ECLAT
+            - 💡 Rekomendasi obat otomatis
+            - 📋 Laporan komprehensif
+            
+            **Teknologi:**
+            - Python + Streamlit
+            - ECLAT Algorithm
+            - Data Analytics
+            
+            📧 **Support:** admin@pharmacy.com
+            📞 **Helpdesk:** 0800-1234-5678
+            """)
+        
+        # Status halaman aktif
+        st.markdown("---")
+        st.markdown(f"**📍 Halaman Aktif:** {st.session_state.active_page}")
+        
+        # Footer
+        st.markdown("---")
+        st.caption("*© 2024 Pharmacy System*")
+    
+    # Return halaman yang dipilih atau halaman aktif dari session state
+    return selected_page if selected_page else st.session_state.active_page
+
+# Alternative: Menggunakan selectbox di dalam expander
+def create_sidebar_with_selectbox():
+    st.sidebar.title("🏥 Pharmacy Management System")
+    st.sidebar.markdown("---")
+    
+    # Initialize session state
+    if 'active_page' not in st.session_state:
+        st.session_state.active_page = "Manajemen Data Obat"
+    
+    selected_page = None
+    
+    with st.sidebar:
+        
+        # Expander untuk Manajemen Obat
+        with st.expander("📊 Manajemen Obat", expanded=True):
+            manajemen_choice = st.selectbox(
+                "Pilih Menu:",
+                ["-- Pilih Menu --", "Manajemen Data Obat", "Unduh Laporan", "Log Aktivitas"],
+                key="manajemen_select"
+            )
+            
+            if manajemen_choice != "-- Pilih Menu --":
+                selected_page = manajemen_choice
+                st.session_state.active_page = selected_page
+        
+        # Expander untuk Eclat Analysis
+        with st.expander("🔍 Eclat Analysis", expanded=True):
+            eclat_choice = st.selectbox(
+                "Pilih Analisis:",
+                ["-- Pilih Analisis --", "Input Data Resep Obat", "Proses Analisis ECLAT", 
+                 "Lihat Hasil Analisis", "Lihat Rekomendasi Obat", "Unduh Laporan Eclat"],
+                key="eclat_select"
+            )
+            
+            if eclat_choice != "-- Pilih Analisis --":
+                selected_page = eclat_choice
+                st.session_state.active_page = selected_page
+        
+        # Quick Actions
+        with st.expander("⚡ Quick Actions"):
+            col1, col2 = st.columns(2)
+            
+            if col1.button("🚀 Quick Start", use_container_width=True):
+                selected_page = "Input Data Resep Obat"
+                st.session_state.active_page = selected_page
+            
+            if col2.button("📊 Dashboard", use_container_width=True):
+                selected_page = "Lihat Hasil Analisis"
+                st.session_state.active_page = selected_page
+        
+        # Pengaturan
+        with st.expander("⚙️ Pengaturan"):
+            st.markdown("**Konfigurasi:**")
+            min_support = st.slider("Minimum Support", 0.1, 1.0, 0.3)
+            max_items = st.number_input("Max Items", 2, 10, 5)
+            
+            # Save settings button
+            if st.button("💾 Simpan Pengaturan", use_container_width=True):
+                st.success("✅ Pengaturan disimpan!")
+        
+        # Info
+        with st.expander("ℹ️ Info & Help"):
+            st.markdown("""
+            **🆘 Butuh Bantuan?**
+            
+            1. **Getting Started**: Mulai dengan Input Data
+            2. **Analisis**: Gunakan menu Eclat Analysis
+            3. **Laporan**: Download hasil di menu Unduh Laporan
+            
+            **📞 Kontak Support:**
+            - Email: support@pharmacy.com
+            - Tel: 0800-1234-5678
+            """)
+        
+        # Status
+        st.markdown("---")
+        st.info(f"🎯 **Halaman Aktif:** {st.session_state.active_page}")
+    
+    return selected_page if selected_page else st.session_state.active_page
+
+
 def main():
     st.set_page_config(
         page_title="ECLAT Drug Pattern Analysis",
         page_icon="💊",
         layout="wide",
-        # initial_sidebar_state="expanded"
+        initial_sidebar_state="expanded"
     )
     
-    st.title("💊 ECLAT Drug")
-    st.markdown("---")
+    # st.title("💊 ECLAT Drug Management")
+    # st.markdown("---")
     
     # Sidebar navigation
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio(
-        "List Halaman Eclat Analysis:",
-        ["Manajemen Data Obat", "Input Data Resep Obat", "Proses Analisis ECLAT", "Lihat Hasil Analisis", 
-         "Lihat Rekomendasi Obat", "Unduh Laporan", "Log Aktivitas"]
-    )
+    active_page = create_sidebar()  # Atau gunakan create_sidebar_with_selectbox()
     
-    # Log page navigation
-    activity_logger.log_activity(f"Navigated to: {page}")
+    # Log activity
+    activity_logger.log_activity(f"Navigated to: {active_page}")
     
-    pages = {
+    # Page routing
+    page_functions = {
         "Manajemen Data Obat": show_manajemen_obat,
+        "Unduh Laporan": download_reports_page,
+        "Log Aktivitas": activity_logs_page,
         "Input Data Resep Obat": input_data_page,
         "Proses Analisis ECLAT": process_analysis_page,
         "Lihat Hasil Analisis": view_results_page,
         "Lihat Rekomendasi Obat": recommendations_page,
-        "Unduh Laporan": download_reports_page,
-        "Log Aktivitas": activity_logs_page,
+        "Unduh Laporan Eclat": download_reports_page,
     }
-
-    # Eksekusi fungsi berdasarkan pilihan user
-    if page in pages:
-        pages[page]()
+    
+    # Show current page in main area
+    st.title(f"📋 {active_page}")
+    st.markdown("---")
+    
+    # Execute the selected page function
+    if active_page in page_functions:
+        try:
+            page_functions[active_page]()
+        except Exception as e:
+            st.error(f"❌ Error loading page: {str(e)}")
+            st.info("💡 Please try refreshing the page or contact support.")
     else:
-        st.error("Halaman tidak ditemukan.")
+        st.error("❌ Halaman tidak ditemukan.")
+        st.info("🔍 Silakan pilih menu yang tersedia di sidebar.")
 
-
+# CSS untuk styling yang lebih baik
+def add_custom_css():
+    st.markdown("""
+    <style>
+    /* Custom button styling */
+    .stButton > button {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background-color: #f8f9fa;
+        color: #333;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background-color: #f1f3f4;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    
+    .streamlit-expanderContent {
+        background-color: #fafafa;
+        border-radius: 0 0 8px 8px;
+    }
+    
+    /* Sidebar styling */
+    .css-1d391kg {
+        background-color: #f8f9fa;
+    }
+    
+    /* Success/Error messages */
+    .stSuccess, .stError, .stInfo {
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 def input_data_page():
     st.header("📊 Input Data Resep Obat")

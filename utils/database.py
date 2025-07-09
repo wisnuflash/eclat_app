@@ -20,6 +20,58 @@ def get_db_connection():
 
     )
 
+
+def execute_sql_file(sql_file_path_relative):
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    sql_file_path = os.path.join(BASE_DIR, sql_file_path_relative)
+    try:
+        # Buka koneksi ke MySQL
+        conn = mysql.connector.connect(
+            host=HOST,
+            user=USER,
+            password=PASSWORD,
+            database=DATABASE,
+            autocommit=True
+        )
+        cursor = conn.cursor()
+
+        # Baca isi file
+        full_path = os.path.abspath(sql_file_path)
+        with open(full_path, 'r', encoding='utf-8') as file:
+            sql_commands = file.read().split(';')
+
+        # Dapatkan semua tabel di database
+        cursor.execute("SHOW TABLES")
+        existing_tables = {row[0] for row in cursor.fetchall()}
+
+        for command in sql_commands:
+            stmt = command.strip()
+            if not stmt:
+                continue
+
+            if stmt.lower().startswith("create table"):
+                table_name = stmt.split()[2].strip('`').lower()
+                if table_name in existing_tables:
+                    print(f"ℹ️ Melewati pembuatan tabel '{table_name}' (sudah ada).")
+                    continue
+
+            # Eksekusi SQL
+            try:
+                cursor.execute(stmt)
+            except Exception as e:
+                print(f"❌ Gagal eksekusi:\n{stmt}\n⚠️ Error: {e}")
+
+        print("✅ Setup SQL selesai.")
+        return True
+
+    except Exception as e:
+        print(f"❌ Koneksi gagal: {e}")
+        return False
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
 # Fungsi untuk mengambil data obat dari database
 def fetch_stock_data():
     conn = get_db_connection()
